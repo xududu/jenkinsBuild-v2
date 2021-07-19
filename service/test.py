@@ -1,5 +1,8 @@
-def test():
-    for i in range(3):
-        yield i
+import re
 
-t = test()
+
+def test(**kwargs) -> str:
+    print(kwargs)
+    return 1
+t = test(a=1,b=2)
+print(type(t))
