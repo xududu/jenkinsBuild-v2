@@ -68,7 +68,7 @@ class database_obj(object):
     # 更新数据库镜像的版本号
     def image_version_update(self, image, version, group):
         self.open_connect()
-        update_sql = "UPDATE jobandimage set ImageVersion='%s' WHERE ImageName='%s' AND GroupName='%s';" \
+        update_sql = "UPDATE jobandimage set ImageVersion='%s', LastUpDate=CURRENT_TIMESTAMP WHERE ImageName='%s' AND GroupName='%s';" \
                      % (version, image, group)
         self.cursor.execute(update_sql)
         self.conn.commit()

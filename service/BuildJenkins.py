@@ -82,9 +82,8 @@ class build_main_obj(object):
                 parameter_dict.update(kwargs)
                 self.server.build_job(job_name, parameters=parameter_dict)
                 # 数据库版本号更新
-                if group != 'center':
-                    operationdata.update_img_ver_function(img=b_img, ver=img_v, group=group)
-                    print('更新镜像%s的版本号更新为：%s' % (b_img, img_v))
+                operationdata.update_img_ver_function(img=b_img, ver=img_v, group=group)
+                print('更新镜像%s的版本号更新为：%s' % (b_img, img_v))
             return True
 
     @staticmethod
