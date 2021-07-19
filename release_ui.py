@@ -76,11 +76,11 @@ class Ui_PublishTools(object):
         self.addJobsBox.setObjectName("addJobsBox")
         # k8s_group框
         self.k8sOptionsBox = QtWidgets.QCheckBox(PublishTools)
-        self.k8sOptionsBox.setGeometry(QtCore.QRect(680, 300, 16, 21))
+        self.k8sOptionsBox.setGeometry(QtCore.QRect(670, 300, 16, 21))
         self.k8sOptionsBox.setText("")
         self.k8sOptionsBox.setObjectName("k8sOptionsBox")
         self.k8sGroupEdit = QtWidgets.QLineEdit(PublishTools)
-        self.k8sGroupEdit.setGeometry(QtCore.QRect(700, 300, 81, 21))
+        self.k8sGroupEdit.setGeometry(QtCore.QRect(690, 300, 81, 21))
         self.k8sGroupEdit.setAutoFillBackground(False)
         self.k8sGroupEdit.setDragEnabled(True)
         self.k8sGroupEdit.setClearButtonEnabled(False)
