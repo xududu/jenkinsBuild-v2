@@ -143,7 +143,7 @@ class Ui_PublishTools(object):
             self.group_name.clear()
 
     def save_clicked(self, event):
-    # 获取输入的组名
+        # 获取输入的组名
         group = self.group_name.currentText()
         if group != 'center':
             if group != '':
@@ -157,31 +157,31 @@ class Ui_PublishTools(object):
                     print(event)
                 else:
                     return False
-    # 检查是否是添加新项目
-    add_job_status = self.addJobsBox.isChecked()
-    # 如果是添加新项目执行这个部分
-    if add_job_status:
-        new_job_str = self.images_input.toPlainText().strip()
-        res = build_api(new_jobs=new_job_str)
-        if res:
-            self.text_input.setText("%s,添加成功！" % new_job_str)
-        else:
-            self.text_input.setText("添加失败！")
-        # 重置按钮状态
-        self.addJobsBox.setChecked(False)
-        self.timingBox.setChecked(False)
-        return True
-    elif self.dc_name.currentText():
-        # 镜像和版本号
-        img_and_version = self.images_input.toPlainText().strip()
+        # 检查是否是添加新项目
+        add_job_status = self.addJobsBox.isChecked()
+        # 如果是添加新项目执行这个部分
+        if add_job_status:
+            new_job_str = self.images_input.toPlainText().strip()
+            res = build_api(new_jobs=new_job_str)
+            if res:
+                self.text_input.setText("%s,添加成功！" % new_job_str)
+            else:
+                self.text_input.setText("添加失败！")
+            # 重置按钮状态
+            self.addJobsBox.setChecked(False)
+            self.timingBox.setChecked(False)
+            return True
+        elif self.dc_name.currentText():
+            # 镜像和版本号
+            img_and_version = self.images_input.toPlainText().strip()
 
-        if group == '正式':
-            group = 'zs'
-        dc = self.dc_name.currentText()
-        dc_name = DC_NAME_DICT[dc]
+            if group == '正式':
+                group = 'zs'
+            dc = self.dc_name.currentText()
+            dc_name = DC_NAME_DICT[dc]
 
-        # 检查是否定时发布
-        timing_box_status = self.timingBox.isChecked()
+            # 检查是否定时发布
+            timing_box_status = self.timingBox.isChecked()
             if timing_box_status:
                 # 定时发布部分
                 timing_timestamp = self.editor_time.dateTime().toTime_t()
