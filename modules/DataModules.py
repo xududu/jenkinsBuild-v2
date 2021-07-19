@@ -21,11 +21,12 @@ class database_obj(object):
     # 创建表
     def create_tables(self):
         self.open_connect()
-        create_table_sql = """CREATE TABLE IF NOT EXISTS `jobtoimage`(
+        create_table_sql = """CREATE TABLE IF NOT EXISTS `jobandimage`(
                            `ImageName` VARCHAR(60) NOT NULL,
                            `JenkinsJob` VARCHAR(100) NOT NULL,
                            `ImageVersion` VARCHAR(30) DEFAULT '1.1.0',
-                           PRIMARY KEY ( `ImageName` )
+                           `GroupName` VARCHAR(30) NOT NULL,
+                           `LastUpDate` TIMESTAMP DEFAULT now() NOT NULL
                         )ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
 
         ret = self.cursor.execute(create_table_sql)
@@ -33,16 +34,16 @@ class database_obj(object):
         self.conn.close()
         return ret
 
-    # 插入镜像和job名字的方法
-    def data_insert(self, img_job: dict):
+    # 插入一条数据，镜像，job，GroupName
+    def data_insert(self, img_job: dict, group):
         self.open_connect()
         for img in img_job:
             image_name = img.strip("'")
             jenkins_job = img_job[img].strip("'")
-            insert_sql = "INSERT INTO jobtoimage(ImageName, \
-                   JenkinsJob) \
-                   VALUES ('%s', '%s')" % \
-                   (image_name, jenkins_job)
+            insert_sql = "INSERT INTO jobandimage(ImageName, \
+                   JenkinsJob, GroupName) \
+                   VALUES ('%s', '%s', %s)" % \
+                         (image_name, jenkins_job, group)
             self.cursor.execute(insert_sql)
 
         self.conn.commit()
@@ -51,11 +52,11 @@ class database_obj(object):
         return 0
 
     # 查询
-    def image_job_select(self, select, basis='ImageName', column1=None, column2=None):
+    def image_job_select(self, select, group, basis='ImageName', column1=None, column2=None):
         self.open_connect()
         select_sql = "SELECT %s, %s \
-                      FROM jobtoimage \
-                      where %s='%s';" % (column1, column2, basis, select)
+                      FROM jobandimage \
+                      where %s='%s' AND GroupName='%s';" % (column1, column2, basis, select, group)
 
         self.cursor.execute(select_sql)
         rows = self.cursor.fetchall()
@@ -65,9 +66,10 @@ class database_obj(object):
         return rows
 
     # 更新数据库镜像的版本号
-    def image_version_update(self, image, version):
+    def image_version_update(self, image, version, group):
         self.open_connect()
-        update_sql = "UPDATE jobtoimage set ImageVersion='%s' WHERE ImageName='%s';" % (version, image)
+        update_sql = "UPDATE jobandimage set ImageVersion='%s' WHERE ImageName='%s' AND GroupName='%s';" \
+                     % (version, image, group)
         self.cursor.execute(update_sql)
         self.conn.commit()
         self.cursor.close()

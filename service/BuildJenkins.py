@@ -23,7 +23,7 @@ class build_main_obj(object):
         ret_str = ''
         for group in self.group_list:
             # 根据job名字到数据库里查版本号,用数据库里的版本号来批量build
-            job_name_tup = operationdata.select_job_function(build_name)
+            job_name_tup = operationdata.select_job_function(job_name=build_name, group=group)
             if job_name_tup:
                 job_name = job_name_tup[0]
                 image_version = job_name_tup[1]
@@ -74,8 +74,8 @@ class build_main_obj(object):
             return True
         else:
             # 只build指定镜像时
-            job_name = operationdata.data_select_function(img=b_img)
             for group in self.group_list:
+                job_name = operationdata.data_select_function(img=b_img, group=group)
                 print('执行的项目是:<%s>，执行的组是:<%s>，执行的数据中心是:<%s>' % (job_name, group, self.dc_name))
                 parameter_dict = {"image_tag": img_v, 'ms_group': group}
 
@@ -83,7 +83,7 @@ class build_main_obj(object):
                 self.server.build_job(job_name, parameters=parameter_dict)
                 # 数据库版本号更新
                 if group != 'center':
-                    operationdata.update_img_ver_function(img=b_img, ver=img_v)
+                    operationdata.update_img_ver_function(img=b_img, ver=img_v, group=group)
                     print('更新镜像%s的版本号更新为：%s' % (b_img, img_v))
             return True
 
@@ -129,10 +129,11 @@ class build_main_obj(object):
                 self._build_job_obj(b_group=ms_group, b_img=img, img_v=version, **kwargs)
         return True
 
-    def insert_new_jobs(self, new_jobs):
+    def insert_new_jobs(self, new_jobs, group):
         """
         向数据库内添加新项目的时候，会调用此函数
         :param new_jobs: 新项目的字典 {'aicard':'stable_aicard_website'}
+        :param group: 项目添加到哪个组
         :return:
         """
         img_jobs_dict = self._str_dict_handle(new_jobs)
@@ -141,6 +142,6 @@ class build_main_obj(object):
             job_name = img_jobs_dict[img]
             new_str = img + ':' + job_name
             single_img_jobs_dict = self._str_dict_handle(new_str)
-            operationdata.new_job_insert_function(single_img_jobs_dict)
+            operationdata.new_job_insert_function(new_job=single_img_jobs_dict, group=group)
             print('%s 已添加！' % single_img_jobs_dict)
         return True

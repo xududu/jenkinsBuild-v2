@@ -25,9 +25,9 @@ def create_table_function():
 
 
 # 根据镜像查询job名
-def data_select_function(img):
+def data_select_function(img, group):
     """根据镜像查询镜像和job对应的关系，返回job名"""
-    select_res = data_obj.image_job_select(column1='ImageName', column2='JenkinsJob', select=img)
+    select_res = data_obj.image_job_select(column1='ImageName', column2='JenkinsJob', select=img, group=group)
     if select_res:
         return dict(select_res)[img]
     else:
@@ -35,23 +35,23 @@ def data_select_function(img):
 
 
 # 更新镜像版本号
-def update_img_ver_function(img, ver):
-    data_obj.image_version_update(image=img, version=ver)
+def update_img_ver_function(img, ver, group):
+    data_obj.image_version_update(image=img, version=ver, group=group)
     return True
 
 
 # 调用插入sql
-def new_job_insert_function(new_job: dict):
+def new_job_insert_function(new_job: dict, group):
     """向表中插入镜像名和job名"""
-    data_obj.data_insert(new_job)
+    data_obj.data_insert(new_job, group=group)
     return True
 
 
 # 根据镜像查询job名
-def select_job_function(job_name):
+def select_job_function(job_name, group):
     """根据镜像查询镜像和job对应的关系，返回job名字和版本号的元组"""
     select_res = data_obj.image_job_select(column1='JenkinsJob', column2='ImageVersion', select=job_name,
-                                           basis='JenkinsJob')
+                                           basis='JenkinsJob', group=group)
     try:
         res = select_res[0]
     except IndexError as IE:
@@ -59,4 +59,3 @@ def select_job_function(job_name):
         return False
     else:
         return res
-
