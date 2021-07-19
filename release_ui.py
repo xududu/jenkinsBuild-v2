@@ -74,6 +74,17 @@ class Ui_PublishTools(object):
         self.addJobsBox = QtWidgets.QCheckBox(PublishTools)
         self.addJobsBox.setGeometry(QtCore.QRect(780, 260, 91, 19))
         self.addJobsBox.setObjectName("addJobsBox")
+        # k8s_group框
+        self.k8sOptionsBox = QtWidgets.QCheckBox(PublishTools)
+        self.k8sOptionsBox.setGeometry(QtCore.QRect(680, 300, 16, 21))
+        self.k8sOptionsBox.setText("")
+        self.k8sOptionsBox.setObjectName("k8sOptionsBox")
+        self.k8sGroupEdit = QtWidgets.QLineEdit(PublishTools)
+        self.k8sGroupEdit.setGeometry(QtCore.QRect(700, 300, 81, 21))
+        self.k8sGroupEdit.setAutoFillBackground(False)
+        self.k8sGroupEdit.setDragEnabled(True)
+        self.k8sGroupEdit.setClearButtonEnabled(False)
+        self.k8sGroupEdit.setObjectName("k8sGroupEdit")
         # 定时选择框触发事件
         # self.timingBox.stateChanged.connect(self.timing_box_event)
         # 点击事件
@@ -107,6 +118,7 @@ class Ui_PublishTools(object):
         self.label_3.setText(_translate("PublishTools", "发布的数据中心"))
         self.timingBox.setText(_translate("PublishTools", "定时发布"))
         self.addJobsBox.setText(_translate("PublishTools", "添加项目"))
+        self.k8sGroupEdit.setText(_translate("PublishTools", "k8s_group"))
 
     # def timing_box_event(self):
     #     timing_box_status = self.timingBox.isChecked()
@@ -131,14 +143,14 @@ class Ui_PublishTools(object):
             self.group_name.clear()
 
     def save_clicked(self, event):
-    # 获取输入的组名
+        # 获取输入的组名
         group = self.group_name.currentText()
         if group != 'center':
             if group != '':
                 # 点击发布按钮后的确认框判断
                 reply = QMessageBox.question(self,
                                              "Are you sure?",
-                                             "确认发布正式?",
+                                             "确认发布?",
                                              QMessageBox.Yes | QMessageBox.No,
                                              QMessageBox.No)
                 if reply == QMessageBox.Yes:
@@ -160,14 +172,14 @@ class Ui_PublishTools(object):
             self.timingBox.setChecked(False)
             return True
         elif self.dc_name.currentText():
-        # 镜像和版本号
+            # 镜像和版本号
             img_and_version = self.images_input.toPlainText().strip()
-            
+
             if group == '正式':
                 group = 'zs'
             dc = self.dc_name.currentText()
             dc_name = DC_NAME_DICT[dc]
-            
+
             # 检查是否定时发布
             timing_box_status = self.timingBox.isChecked()
             if timing_box_status:
@@ -192,7 +204,14 @@ class Ui_PublishTools(object):
                     return False
             else:
                 # 非定时发布部分
-                res = build_api(img_version=img_and_version, ms_group=group, dc_name=dc_name)
+                # 检查是否勾选了k8s_group
+                k8s_box_status = self.k8sOptionsBox.isChecked()
+                if k8s_box_status:
+                    k8s_group_str = self.k8sGroupEdit.text().strip()
+                    res = build_api(img_version=img_and_version, ms_group=group, dc_name=dc_name,
+                                    k8s_group=k8s_group_str)
+                else:
+                    res = build_api(img_version=img_and_version, ms_group=group, dc_name=dc_name)
                 if res:
                     self.text_input.setText("镜像是：" + img_and_version + "\n" + "组名是：" + group + "\n" +
                                             "dcName是：" + dc)
@@ -203,5 +222,3 @@ class Ui_PublishTools(object):
         else:
             self.text_input.setText("没有选择发布的数据中心！！！")
             return False
-
-

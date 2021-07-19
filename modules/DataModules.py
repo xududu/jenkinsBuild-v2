@@ -64,7 +64,7 @@ class database_obj(object):
         self.conn.close()
         return rows
 
-    # 更新数据库镜像和版本号
+    # 更新数据库镜像的版本号
     def image_version_update(self, image, version):
         self.open_connect()
         update_sql = "UPDATE jobtoimage set ImageVersion='%s' WHERE ImageName='%s';" % (version, image)

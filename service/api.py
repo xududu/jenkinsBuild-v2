@@ -26,12 +26,12 @@ def config_instantiation(var_sections='sc'):
     return build_obj
 
 
-def build_api(img_version='', ms_group='', dc_name='sc', new_jobs=''):
+def build_api(img_version='', ms_group='', dc_name='sc', new_jobs='', **kwargs):
     # 实例化
     build_init = config_instantiation(var_sections=dc_name)
     # build项目
     if img_version:
-        res = build_init.build_option(img_version=img_version, ms_group=ms_group)
+        res = build_init.build_option(img_version=img_version, ms_group=ms_group, **kwargs)
         if res:
             return True
     # 添加项目
