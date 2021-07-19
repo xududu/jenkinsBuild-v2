@@ -70,6 +70,21 @@ class Ui_PublishTools(object):
         self.timingBox = QtWidgets.QCheckBox(PublishTools)
         self.timingBox.setGeometry(QtCore.QRect(670, 260, 91, 19))
         self.timingBox.setObjectName("timingBox")
+        # 添加项目选择框
+        self.addJobsBox = QtWidgets.QCheckBox(PublishTools)
+        self.addJobsBox.setGeometry(QtCore.QRect(780, 260, 91, 19))
+        self.addJobsBox.setObjectName("addJobsBox")
+        # k8s_group框
+        self.k8sOptionsBox = QtWidgets.QCheckBox(PublishTools)
+        self.k8sOptionsBox.setGeometry(QtCore.QRect(680, 300, 16, 21))
+        self.k8sOptionsBox.setText("")
+        self.k8sOptionsBox.setObjectName("k8sOptionsBox")
+        self.k8sGroupEdit = QtWidgets.QLineEdit(PublishTools)
+        self.k8sGroupEdit.setGeometry(QtCore.QRect(700, 300, 81, 21))
+        self.k8sGroupEdit.setAutoFillBackground(False)
+        self.k8sGroupEdit.setDragEnabled(True)
+        self.k8sGroupEdit.setClearButtonEnabled(False)
+        self.k8sGroupEdit.setObjectName("k8sGroupEdit")
         # 定时选择框触发事件
         # self.timingBox.stateChanged.connect(self.timing_box_event)
         # 点击事件
@@ -102,6 +117,8 @@ class Ui_PublishTools(object):
         self.dc_name.setItemText(4, _translate("PublishTools", "龙口"))
         self.label_3.setText(_translate("PublishTools", "发布的数据中心"))
         self.timingBox.setText(_translate("PublishTools", "定时发布"))
+        self.addJobsBox.setText(_translate("PublishTools", "添加项目"))
+        self.k8sGroupEdit.setText(_translate("PublishTools", "k8s_group"))
 
     # def timing_box_event(self):
     #     timing_box_status = self.timingBox.isChecked()
@@ -133,24 +150,38 @@ class Ui_PublishTools(object):
                 # 点击发布按钮后的确认框判断
                 reply = QMessageBox.question(self,
                                              "Are you sure?",
-                                             "确认发布正式?",
+                                             "确认发布?",
                                              QMessageBox.Yes | QMessageBox.No,
                                              QMessageBox.No)
                 if reply == QMessageBox.Yes:
                     print(event)
                 else:
                     return False
-        if self.dc_name.currentText():
+    # 检查是否是添加新项目
+    add_job_status = self.addJobsBox.isChecked()
+    # 如果是添加新项目执行这个部分
+    if add_job_status:
+        new_job_str = self.images_input.toPlainText().strip()
+        res = build_api(new_jobs=new_job_str)
+        if res:
+            self.text_input.setText("%s,添加成功！" % new_job_str)
+        else:
+            self.text_input.setText("添加失败！")
+        # 重置按钮状态
+        self.addJobsBox.setChecked(False)
+        self.timingBox.setChecked(False)
+        return True
+    elif self.dc_name.currentText():
         # 镜像和版本号
-            img_and_version = self.images_input.toPlainText().strip()
-            
-            if group == '正式':
-                group = 'zs'
-            dc = self.dc_name.currentText()
-            dc_name = DC_NAME_DICT[dc]
+        img_and_version = self.images_input.toPlainText().strip()
 
-            # 检查是否定时发布
-            timing_box_status = self.timingBox.isChecked()
+        if group == '正式':
+            group = 'zs'
+        dc = self.dc_name.currentText()
+        dc_name = DC_NAME_DICT[dc]
+
+        # 检查是否定时发布
+        timing_box_status = self.timingBox.isChecked()
             if timing_box_status:
                 # 定时发布部分
                 timing_timestamp = self.editor_time.dateTime().toTime_t()
@@ -159,7 +190,7 @@ class Ui_PublishTools(object):
                     string_time = self.editor_time.dateTime().toString("yyyy-MM-dd HH:mm:ss")
                     time_difference = timing_timestamp - now_timestamp
 
-                    print(time_difference)
+                    print('%s seconds from the scheduled task' % time_difference)
                     timing = threading.Timer(time_difference, build_api, (img_and_version, group, dc_name))
                     self.text_input.setText("将在%s 发布%s 镜像，到%s 数据中心的 %s 组！" % (string_time, img_and_version,
                                                                               dc_name, group))
@@ -167,17 +198,27 @@ class Ui_PublishTools(object):
                     # 取消选择框的选则状态，每次定时发布都需要重新选择定时发布
                     self.timingBox.setChecked(False)
                     # self.timing.cancel()
+                    return True
                 else:
                     self.text_input.setText("输入的时间小于当前时间！！！")
+                    return False
             else:
                 # 非定时发布部分
-                res = build_api(img_version=img_and_version, ms_group=group, dc_name=dc_name)
+                # 检查是否勾选了k8s_group
+                k8s_box_status = self.k8sOptionsBox.isChecked()
+                if k8s_box_status:
+                    k8s_group_str = self.k8sGroupEdit.text().strip()
+                    res = build_api(img_version=img_and_version, ms_group=group, dc_name=dc_name,
+                                    k8s_group=k8s_group_str)
+                else:
+                    res = build_api(img_version=img_and_version, ms_group=group, dc_name=dc_name)
                 if res:
                     self.text_input.setText("镜像是：" + img_and_version + "\n" + "组名是：" + group + "\n" +
                                             "dcName是：" + dc)
+                    return True
                 else:
                     self.text_input.setText("发布有问题")
+                    return False
         else:
             self.text_input.setText("没有选择发布的数据中心！！！")
-
-
+            return False
