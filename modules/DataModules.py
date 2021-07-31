@@ -3,7 +3,7 @@ import pymysql
 
 class database_obj(object):
     # 默认值本地测试数据库
-    def __init__(self, data_host='192.168.7.201', data_port=3306, data_user='root', data_pwd='root',
+    def __init__(self, data_host='192.168.104.44', data_port=4400, data_user='root', data_pwd='123456',
                  data_db='jenkinsbuild'):
         self.data_host = data_host
         self.data_port = data_port
@@ -34,29 +34,29 @@ class database_obj(object):
         self.conn.close()
         return ret
 
-    # 插入一条数据，镜像，job，GroupName
-    def data_insert(self, img_job: dict, group):
+    # 插入一条数据，镜像，job，image_version，env_and_group_id
+    def data_insert(self, img_job: dict, env_and_group_id, image_version='1.1.0'):
         self.open_connect()
         for img in img_job:
             image_name = img.strip("'")
             jenkins_job = img_job[img].strip("'")
-            insert_sql = "INSERT INTO jobandimage(ImageName, \
-                   JenkinsJob, GroupName) \
+            insert_sql = "INSERT INTO JobMessage(ImageName, \
+                   JenkinsJob, ImageVersion, EnvAndGroupID) \
                    VALUES ('%s', '%s', %s)" % \
-                         (image_name, jenkins_job, group)
+                         (image_name, jenkins_job, image_version, env_and_group_id)
             self.cursor.execute(insert_sql)
 
         self.conn.commit()
         self.cursor.close()
         self.conn.close()
-        return 0
+        return True
 
-    # 查询
-    def image_job_select(self, select, group, basis='ImageName', column1=None, column2=None):
+    # 查询column1 column2 ：要获取的结果，env_and_group_id：组id
+    def image_job_select(self, select, env_and_group_id, basis='ImageName', column1=None, column2=None):
         self.open_connect()
         select_sql = "SELECT %s, %s \
-                      FROM jobandimage \
-                      where %s='%s' AND GroupName='%s';" % (column1, column2, basis, select, group)
+                      FROM JobMessage \
+                      where %s='%s' AND EnvAndGroupID='%s';" % (column1, column2, basis, select, env_and_group_id)
 
         self.cursor.execute(select_sql)
         rows = self.cursor.fetchall()
@@ -66,10 +66,11 @@ class database_obj(object):
         return rows
 
     # 更新数据库镜像的版本号
-    def image_version_update(self, image, version, group):
+    def image_version_update(self, image, version, env_and_group_id):
         self.open_connect()
-        update_sql = "UPDATE jobandimage set ImageVersion='%s', LastUpDate=CURRENT_TIMESTAMP WHERE ImageName='%s' AND GroupName='%s';" \
-                     % (version, image, group)
+        update_sql = "UPDATE JobMessage set ImageVersion='%s', LastUpDate=CURRENT_TIMESTAMP  \
+                     WHERE ImageName='%s' AND EnvAndGroupID='%s';" \
+                     % (version, image, env_and_group_id)
         self.cursor.execute(update_sql)
         self.conn.commit()
         self.cursor.close()
