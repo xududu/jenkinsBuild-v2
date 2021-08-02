@@ -1,7 +1,4 @@
 import pymysql
-import time
-
-update_time = time.strftime('%Y-%m-%d %X', time.localtime(time.time()))
 
 
 class database_obj(object):
@@ -52,7 +49,70 @@ class database_obj(object):
         self.conn.close()
         return ret
 
+    # 插入一条数据，镜像，job，image_version，group_id
+    def data_insert(self, img_job: dict, group_id, image_version='1.1.0'):
+        self.open_connect()
+        for img in img_job:
+            image_name = img.strip("'")
+            jenkins_job = img_job[img].strip("'")
+            insert_sql = "INSERT INTO JobMessage(ImageName, \
+                   JenkinsJob, ImageVersion, EnvAndGroupID) \
+                   VALUES ('%s', '%s', %s)" % \
+                         (image_name, jenkins_job, image_version, group_id)
+            self.cursor.execute(insert_sql)
 
-a = database_obj()
-a.create_tables()
-# a.create_table_env()
+        self.conn.commit()
+        self.cursor.close()
+        self.conn.close()
+        return True
+
+    # 查询column1 column2 ：要获取的结果，group_id：组id
+    def image_job_select(self, select, group_id, basis='ImageName', column1=None, column2=None):
+        self.open_connect()
+        select_sql = "SELECT %s, %s \
+                      FROM JobMessage \
+                      where %s='%s' AND EnvAndGroupID='%s';" % (column1, column2, basis, select, group_id)
+
+        self.cursor.execute(select_sql)
+        rows = self.cursor.fetchall()
+
+        self.cursor.close()
+        self.conn.close()
+        return rows
+
+    # 更新数据库镜像的版本号
+    def image_version_update(self, image, version, group_id):
+        self.open_connect()
+        update_sql = "UPDATE JobMessage set ImageVersion='%s', LastUpDate=CURRENT_TIMESTAMP  \
+                     WHERE ImageName='%s' AND EnvAndGroupID='%s';" \
+                     % (version, image, group_id)
+        self.cursor.execute(update_sql)
+        self.conn.commit()
+        self.cursor.close()
+        self.conn.close()
+
+    # EnvAndGroup表查询操作
+    def env_and_group_select(self):
+        """
+        ID
+        Environment
+        GroupName
+        """
+        self.open_connect()
+        select_sql = "SELECT ID FROM EnvAndGroup  where Environment='sc' AND GroupName='center';"
+
+        self.cursor.execute(select_sql)
+        return_value = self.cursor.fetchall()
+        #TODO
+        print(return_value,'xxx')
+
+        self.cursor.close()
+        self.conn.close()
+        return return_value
+
+obj = database_obj()
+# ret = obj.image_job_select(select='aicard', group_id=1, basis='ImageName', column1='JenkinsJob', column2='ImageName')
+# ret2 = obj.env_and_group_select(select='ID', where1='Environment', where2='GroupName', value1='sc', value2='center')
+ret2 = obj.env_and_group_select()
+# print(ret)
+print(ret2[0][0])

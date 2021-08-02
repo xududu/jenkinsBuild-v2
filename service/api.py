@@ -5,7 +5,7 @@ from service import BuildJenkins
 # 读取配置文件,实例化build_main_obj
 def config_instantiation(var_sections='sc'):
     cp = RawConfigParser()
-    cp.read('./config/config.cfg')
+    cp.read('./config/config.cfg', encoding='utf-8')
     secs = cp.sections()
     assert var_sections in secs, 'dc_name ERROR!!!!!'
 
@@ -31,11 +31,11 @@ def build_api(img_version='', ms_group='', dc_name='sc', new_jobs='', **kwargs):
     build_init = config_instantiation(var_sections=dc_name)
     # build项目
     if img_version:
-        res = build_init.build_option(img_version=img_version, ms_group=ms_group, **kwargs)
+        res = build_init.build_option(img_version=img_version, ms_group=ms_group, env_name=dc_name, **kwargs)
         if res:
             return True
     # 添加项目
     elif new_jobs:
-        build_init.insert_new_jobs(new_jobs=new_jobs)
+        build_init.insert_new_jobs(new_jobs=new_jobs, group=ms_group, env_name=dc_name)
     return build_init
 
