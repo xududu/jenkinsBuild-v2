@@ -21,15 +21,16 @@ class database_obj(object):
                                     password=self.data_pwd, db=self.data_db, charset='utf8')
         self.cursor = self.conn.cursor()
 
-    # 创建表
+    # 创建镜像和Job的信息表
     def create_tables(self):
         self.open_connect()
-        create_table_sql = """CREATE TABLE IF NOT EXISTS `jobandimage`(
+        create_table_sql = """CREATE TABLE IF NOT EXISTS `JobMessage`(
                            `ImageName` VARCHAR(60) NOT NULL,
                            `JenkinsJob` VARCHAR(100) NOT NULL,
                            `ImageVersion` VARCHAR(30) DEFAULT '1.1.0',
-                           `GroupName` VARCHAR(30) NOT NULL,
-                           `LastUpDate` TIMESTAMP DEFAULT now() NOT NULL
+                           `EnvAndGroupID` INT(60) NOT NULL,
+                           `LastUpDate` TIMESTAMP DEFAULT now() NOT NULL,
+                           FOREIGN KEY(EnvAndGroupID) REFERENCES EnvAndGroup(ID)
                         )ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
 
         ret = self.cursor.execute(create_table_sql)
@@ -37,6 +38,21 @@ class database_obj(object):
         self.conn.close()
         return ret
 
+    # 创建环境和组信息表
+    def create_table_env(self):
+        self.open_connect()
+        create_table_env_sql = """CREATE TABLE IF NOT EXISTS `EnvAndGroup`(
+                           `ID` INT(60) NOT NULL AUTO_INCREMENT,
+                           `Environment` VARCHAR(60) NOT NULL,
+                           `GroupName` VARCHAR(60) NOT NULL,
+                           PRIMARY KEY ( `ID` )
+                        )ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
+        ret = self.cursor.execute(create_table_env_sql)
+        self.cursor.close()
+        self.conn.close()
+        return ret
+
 
 a = database_obj()
 a.create_tables()
+# a.create_table_env()
