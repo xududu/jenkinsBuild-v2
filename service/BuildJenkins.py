@@ -25,7 +25,6 @@ class build_main_obj(object):
         ret_str = ''
         for group in self.group_list:
             # 根据job名字到数据库里查版本号,用数据库里的版本号来批量build
-            #TODO
             group_id = operationdata.select_group_id_function(env=env_name, group_name=group)
             job_name_tup = operationdata.select_job_function(job_name=build_name, group_id=group_id)
             if job_name_tup:
@@ -81,8 +80,6 @@ class build_main_obj(object):
             # 只build指定镜像时
             for group in self.group_list:
                 group_id = operationdata.select_group_id_function(env=env_name, group_name=group)
-                #TODO
-                print(env_name,group)
                 job_name = operationdata.data_select_function(img=b_img, group_id=group_id)
                 print('执行的项目是:<%s>，执行的组是:<%s>，执行的数据中心是:<%s>' % (job_name, group, self.dc_name))
                 parameter_dict = {"image_tag": img_v, 'ms_group': group}

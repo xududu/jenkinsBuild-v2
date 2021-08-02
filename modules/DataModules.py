@@ -103,9 +103,6 @@ class database_obj(object):
 
         self.cursor.execute(select_sql)
         return_value = self.cursor.fetchall()
-        #TODO
-        print(return_value)
-        print(select, where1, value1, where2, value2)
 
         self.cursor.close()
         self.conn.close()

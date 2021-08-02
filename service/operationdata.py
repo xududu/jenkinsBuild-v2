@@ -28,8 +28,6 @@ def create_table_function():
 def data_select_function(img, group_id):
     """根据镜像查询镜像和job对应的关系，返回job名"""
     select_res = data_obj.image_job_select(column1='ImageName', column2='JenkinsJob', select=img, group_id=group_id)
-    #TODO
-    print(img, group_id, select_res)
     if select_res:
         return dict(select_res)[img]
     else:
@@ -65,8 +63,6 @@ def select_job_function(job_name, group_id):
 # 根据环境和组名查询组id
 def select_group_id_function(env, group_name):
     """根据环境和组名查询组的id，返回组id"""
-    #TODO
-    print(env,group_name,'select_group_id_function')
     group_id_tup = data_obj.env_and_group_select(select='ID',
                                             where1='Environment', where2='GroupName',
                                             value1=env, value2=group_name)
