@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import QMessageBox
 import threading
 from service.api import build_api
 import ctypes
+import time
 
 DC_NAME_DICT = {"华为云": "sc", "本地": "bd", "云阳": "yy", "龙口": "lk"}
 STATUS_CODE = {101: 'success!', 201: '', 301: '%s 格式化错误!', 401: '%s 组名错误!',
@@ -33,7 +34,7 @@ class Ui_PublishTools(object):
         self.close_but.setGeometry(QtCore.QRect(600, 520, 331, 51))
         self.close_but.setObjectName("close_but")
         self.text_input = QtWidgets.QTextBrowser(PublishTools)
-        self.text_input.setGeometry(QtCore.QRect(0, 0, 951, 131))
+        self.text_input.setGeometry(QtCore.QRect(0, 0, 461, 131))
         self.text_input.setObjectName("text_input")
         # 编辑日期时间
         self.editor_time = QtWidgets.QDateTimeEdit(PublishTools)
@@ -87,6 +88,9 @@ class Ui_PublishTools(object):
         self.k8sGroupEdit.setDragEnabled(True)
         self.k8sGroupEdit.setClearButtonEnabled(False)
         self.k8sGroupEdit.setObjectName("k8sGroupEdit")
+        self.publish_history = QtWidgets.QTextBrowser(PublishTools)
+        self.publish_history.setGeometry(QtCore.QRect(470, 0, 471, 131))
+        self.publish_history.setObjectName("publish_history")
         # 定时选择框触发事件
         # self.timingBox.stateChanged.connect(self.timing_box_event)
         # 点击事件
@@ -121,6 +125,12 @@ class Ui_PublishTools(object):
         self.timingBox.setText(_translate("PublishTools", "定时发布"))
         self.addJobsBox.setText(_translate("PublishTools", "添加项目"))
         self.k8sGroupEdit.setText(_translate("PublishTools", "k8s_group"))
+        self.publish_history.setHtml(_translate("PublishTools",
+                                                "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                                "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                                "p, li { white-space: pre-wrap; }\n"
+                                                "</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+                                                "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600; color:#ff0000;\">发布历史</span></p></body></html>"))
 
     # def timing_box_event(self):
     #     timing_box_status = self.timingBox.isChecked()
@@ -219,6 +229,10 @@ class Ui_PublishTools(object):
                 if res == 101:
                     self.text_input.setText("镜像是：" + img_and_version + "\n" + "组名是：" + group + "\n" +
                                             "dcName是：" + dc)
+                    # 发布成功之后 更新发布历史
+                    now_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+                    new_text = self.publish_history.toPlainText() + "\n" + now_time + ': ' + img_and_version
+                    self.publish_history.setText(new_text)
                     return True
                 else:
                     res_text = STATUS_CODE[res]
