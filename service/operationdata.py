@@ -31,7 +31,8 @@ def data_select_function(img):
     if select_res:
         return dict(select_res)[img]
     else:
-        raise ErrorModules.ProjectDoesNotExist(img)
+        print(img, '在库中不存在')
+        return 402
 
 
 # 更新镜像版本号
@@ -55,8 +56,8 @@ def select_job_function(job_name):
     try:
         res = select_res[0]
     except IndexError as IE:
-        print(IE, ErrorModules.ProjectDoesNotExist(job_name))
-        return False
+
+        return 402
     else:
         return res
 

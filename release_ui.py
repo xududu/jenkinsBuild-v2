@@ -15,6 +15,8 @@ from service.api import build_api
 import ctypes
 
 DC_NAME_DICT = {"华为云": "sc", "本地": "bd", "云阳": "yy", "龙口": "lk"}
+STATUS_CODE = {101: 'success!', 201: '', 301: '%s 格式化错误!', 401: '%s 组名错误!',
+               402: '输入的内容中：%s至少有一个在数据库中不存在！检查镜像名或者根据后台输出添加新项目："aicard":"stable_aicard_website"'}
 
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")
 
@@ -163,10 +165,11 @@ class Ui_PublishTools(object):
         if add_job_status:
             new_job_str = self.images_input.toPlainText().strip()
             res = build_api(new_jobs=new_job_str)
-            if res:
+            if res == 101:
                 self.text_input.setText("%s,添加成功！" % new_job_str)
             else:
-                self.text_input.setText("添加失败！")
+                res_text = STATUS_CODE[res]
+                self.text_input.setText(res_text % new_job_str)
             # 重置按钮状态
             self.addJobsBox.setChecked(False)
             self.timingBox.setChecked(False)
@@ -174,6 +177,7 @@ class Ui_PublishTools(object):
         elif self.dc_name.currentText():
             # 镜像和版本号
             img_and_version = self.images_input.toPlainText().strip()
+            img_and_version = img_and_version.lower().replace(' ', '')
 
             if group == '正式':
                 group = 'zs'
@@ -212,12 +216,13 @@ class Ui_PublishTools(object):
                                     k8s_group=k8s_group_str)
                 else:
                     res = build_api(img_version=img_and_version, ms_group=group, dc_name=dc_name)
-                if res:
+                if res == 101:
                     self.text_input.setText("镜像是：" + img_and_version + "\n" + "组名是：" + group + "\n" +
                                             "dcName是：" + dc)
                     return True
                 else:
-                    self.text_input.setText("发布有问题")
+                    res_text = STATUS_CODE[res]
+                    self.text_input.setText(res_text % img_and_version)
                     return False
         else:
             self.text_input.setText("没有选择发布的数据中心！！！")

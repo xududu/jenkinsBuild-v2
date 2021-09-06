@@ -24,6 +24,8 @@ class build_main_obj(object):
         for group in self.group_list:
             # 根据job名字到数据库里查版本号,用数据库里的版本号来批量build
             job_name_tup = operationdata.select_job_function(build_name)
+            if job_name_tup == 402:
+                return 402
             if job_name_tup:
                 job_name = job_name_tup[0]
                 image_version = job_name_tup[1]
@@ -59,7 +61,8 @@ class build_main_obj(object):
         elif b_group in self.ZS_Group_list:
             self.group_list = b_group.split()
         else:
-            raise ErrorModules.GroupNameError(b_group)
+            # 组名错误
+            return 401
         # 如果要build所有镜像会执行此部分
         if all_img_obj:
             for job in all_img_obj:
@@ -67,14 +70,20 @@ class build_main_obj(object):
                 if job['color'] == 'disabled':
                     continue
                 if b_img == 'all':
-                    self._build_job_obj_auxiliary_function(build_name=job['name'])
+                    res = self._build_job_obj_auxiliary_function(build_name=job['name'])
+                    if res == 402:
+                        return 402
                 # 如果只build某些model
                 elif '_' + b_img in job['name']:
-                    self._build_job_obj_auxiliary_function(build_name=job['name'])
-            return True
+                    res = self._build_job_obj_auxiliary_function(build_name=job['name'])
+                    if res == 402:
+                        return 402
+            return 101
         else:
             # 只build指定镜像时
             job_name = operationdata.data_select_function(img=b_img)
+            if job_name == 402:
+                return 402
             for group in self.group_list:
                 print('执行的项目是:<%s>，执行的组是:<%s>，执行的数据中心是:<%s>' % (job_name, group, self.dc_name))
                 parameter_dict = {"image_tag": img_v, 'ms_group': group}
@@ -85,7 +94,7 @@ class build_main_obj(object):
                 if group != 'center':
                     operationdata.update_img_ver_function(img=b_img, ver=img_v)
                     print('更新镜像%s的版本号更新为：%s' % (b_img, img_v))
-            return True
+            return 101
 
     @staticmethod
     def _str_dict_handle(img_str: str):
@@ -105,7 +114,7 @@ class build_main_obj(object):
                 img_version = imgAdnVersion.split(':')[1]
                 res_dic[img_name] = img_version
         except IndexError as e:
-            raise ErrorModules.ImagesFormatError(img_str)
+            return 301
         else:
             return res_dic
 
@@ -120,14 +129,20 @@ class build_main_obj(object):
         # 如果想build所有镜像或某部分镜像执行此部分
         if img_version in self.model_list:
             all_jobs_name_obj = self.server.get_jobs(view_name=self.jk_view_name)
-            self._build_job_obj(b_group=ms_group, b_img=img_version, all_img_obj=all_jobs_name_obj, **kwargs)
+            res = self._build_job_obj(b_group=ms_group, b_img=img_version, all_img_obj=all_jobs_name_obj, **kwargs)
+            if res == 401:
+                return 401
         else:
             # 如果只build某些指定的镜像执行此部分
             img_version_dict = self._str_dict_handle(img_version)
+            if img_version_dict == 301:
+                return 301
             for img in img_version_dict:
                 version = img_version_dict[img]
-                self._build_job_obj(b_group=ms_group, b_img=img, img_v=version, **kwargs)
-        return True
+                res = self._build_job_obj(b_group=ms_group, b_img=img, img_v=version, **kwargs)
+                if res != 101:
+                    return res
+        return 101
 
     def insert_new_jobs(self, new_jobs):
         """
@@ -136,11 +151,15 @@ class build_main_obj(object):
         :return:
         """
         img_jobs_dict = self._str_dict_handle(new_jobs)
+        if img_jobs_dict == 301:
+            return 301
         # 在同时传入多个新项目的时候，把一个大字典拆分成单个字典，然后调用new_job_insert_function函数
         for img in img_jobs_dict:
             job_name = img_jobs_dict[img]
             new_str = img + ':' + job_name
             single_img_jobs_dict = self._str_dict_handle(new_str)
+            if single_img_jobs_dict == 301:
+                return 301
             operationdata.new_job_insert_function(single_img_jobs_dict)
             print('%s 已添加！' % single_img_jobs_dict)
-        return True
+        return 101

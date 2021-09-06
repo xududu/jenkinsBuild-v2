@@ -33,9 +33,10 @@ def build_api(img_version='', ms_group='', dc_name='sc', new_jobs='', **kwargs):
     if img_version:
         res = build_init.build_option(img_version=img_version, ms_group=ms_group, **kwargs)
         if res:
-            return True
+            return res
     # 添加项目
     elif new_jobs:
-        build_init.insert_new_jobs(new_jobs=new_jobs)
+        res = build_init.insert_new_jobs(new_jobs=new_jobs)
+        return res
     return build_init
 
