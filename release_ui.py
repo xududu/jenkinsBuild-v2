@@ -231,7 +231,8 @@ class Ui_PublishTools(object):
                                             "dcName是：" + dc)
                     # 发布成功之后 更新发布历史
                     now_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-                    new_text = self.publish_history.toPlainText() + "\n" + now_time + ': ' + img_and_version
+                    new_text = self.publish_history.toPlainText() + "\n" + now_time + ': ' + group + '-' + \
+                               img_and_version
                     self.publish_history.setText(new_text)
                     return True
                 else:
