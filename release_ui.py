@@ -188,6 +188,9 @@ class Ui_PublishTools(object):
             # 镜像和版本号
             img_and_version = self.images_input.toPlainText().strip()
             img_and_version = img_and_version.lower().replace(' ', '')
+            # 下面两行替换掉’img_and_version‘字符串中的unicode字符‘\xe2\x80\x8b’
+            img_and_version = img_and_version.encode('raw_unicode_escape').decode('utf-8')
+            img_and_version = img_and_version.replace('\\u200b', '')
 
             if group == '正式':
                 group = 'zs'
