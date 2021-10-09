@@ -158,18 +158,17 @@ class Ui_PublishTools(object):
     def save_clicked(self, event):
         # 获取输入的组名
         group = self.group_name.currentText()
-        if group != 'center':
-            if group != '':
-                # 点击发布按钮后的确认框判断
-                reply = QMessageBox.question(self,
-                                             "Are you sure?",
-                                             "确认发布?",
-                                             QMessageBox.Yes | QMessageBox.No,
-                                             QMessageBox.No)
-                if reply == QMessageBox.Yes:
-                    print(event)
-                else:
-                    return False
+        if group != 'center' and group != '':
+            # 点击发布按钮后的确认框判断
+            reply = QMessageBox.question(self,
+                                         "Are you sure?",
+                                         "确认发布?",
+                                         QMessageBox.Yes | QMessageBox.No,
+                                         QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                print(event)
+            else:
+                return False
         # 检查是否是添加新项目
         add_job_status = self.addJobsBox.isChecked()
         # 如果是添加新项目执行这个部分
