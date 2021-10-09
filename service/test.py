@@ -1,42 +1,40 @@
-import pymysql
-import time
+import re
 
-update_time = time.strftime('%Y-%m-%d %X', time.localtime(time.time()))
-
-
-class database_obj(object):
-    # 默认值本地测试数据库
-    def __init__(self, data_host='192.168.104.44', data_port=4400, data_user='root', data_pwd='123456',
-                 data_db='jenkinsbuild'):
-        self.data_host = data_host
-        self.data_port = data_port
-        self.data_user = data_user
-        self.data_pwd = data_pwd
-        self.data_db = data_db
-        self.conn = ''
-        self.cursor = ''
-
-    def open_connect(self):
-        self.conn = pymysql.connect(host=self.data_host, port=self.data_port, user=self.data_user,
-                                    password=self.data_pwd, db=self.data_db, charset='utf8')
-        self.cursor = self.conn.cursor()
-
-    # 创建表
-    def create_tables(self):
-        self.open_connect()
-        create_table_sql = """CREATE TABLE IF NOT EXISTS `jobandimage`(
-                           `ImageName` VARCHAR(60) NOT NULL,
-                           `JenkinsJob` VARCHAR(100) NOT NULL,
-                           `ImageVersion` VARCHAR(30) DEFAULT '1.1.0',
-                           `GroupName` VARCHAR(30) NOT NULL,
-                           `LastUpDate` TIMESTAMP DEFAULT now() NOT NULL
-                        )ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
-
-        ret = self.cursor.execute(create_table_sql)
-        self.cursor.close()
-        self.conn.close()
-        return ret
+image_compile = re.compile(r'[\w]+[a-z]+[\w]+')
+version_compile = re.compile(r'[\w.]+\.[\d]+$')
 
 
-a = database_obj()
-a.create_tables()
+image_and_version_input = """exercisev2:1.7.9.3
+aicard:1.4.5.3"""
+
+image_and_version_str = ''
+input_list = image_and_version_input.splitlines()
+input_len = len(input_list)
+
+
+# for index, content in enumerate(input_list):
+#     image_version_symbol_search = re.search(':', content)
+#     print(image_version_symbol_search)
+#     # print(image_version_multiple)
+
+
+if input_len == 1:
+    image_and_version_str = image_and_version_input
+else:
+    # 适配钉钉复制过来的多行格式
+    for index, content in enumerate(input_list):
+        image_matching = image_compile.fullmatch(content)
+        version_matching = version_compile.fullmatch(content)
+        image_version_symbol_search = re.search(':', content)
+        # 匹配带：的多行
+        if image_version_symbol_search:
+            image_and_version_str = image_and_version_str + content + ','
+        else:
+            if image_matching:
+                image_name = content
+                image_and_version_str = image_and_version_str + image_name + ':'
+            elif version_matching:
+                image_version = content
+                image_and_version_str = image_and_version_str + image_version + ','
+
+print(image_and_version_str.strip(','))
