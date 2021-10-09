@@ -199,9 +199,7 @@ class Ui_PublishTools(object):
             # 判断是否是多行输入部分
             input_list = img_and_version.splitlines()
             input_len = len(input_list)
-            if input_len == 1:
-                img_and_version = img_and_version
-            else:
+            if input_len != 1:
                 img_and_version = ''
                 # 适配钉钉复制过来的多行格式
                 for _, content in enumerate(input_list):
@@ -214,6 +212,7 @@ class Ui_PublishTools(object):
                     elif version_matching:
                         image_version = content
                         img_and_version = img_and_version + image_version + ','
+
             img_and_version = img_and_version.strip(',')
 
             if group == '正式':
