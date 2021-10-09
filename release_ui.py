@@ -200,11 +200,11 @@ class Ui_PublishTools(object):
             input_list = img_and_version.splitlines()
             input_len = len(input_list)
             if input_len == 1:
-                pass
+                img_and_version = img_and_version
             else:
                 img_and_version = ''
                 # 适配钉钉复制过来的多行格式
-                for index, content in enumerate(input_list):
+                for _, content in enumerate(input_list):
                     image_matching = image_compile.fullmatch(content)
                     version_matching = version_compile.fullmatch(content)
 
