@@ -14,6 +14,7 @@ import threading
 from service.api import build_api
 import ctypes
 import time
+import re
 
 DC_NAME_DICT = {"华为云": "sc", "本地": "bd", "云阳": "yy", "龙口": "lk"}
 STATUS_CODE = {101: 'success!', 201: '', 301: '%s 格式化错误!', 401: '%s 组名错误!',
@@ -185,13 +186,35 @@ class Ui_PublishTools(object):
             self.timingBox.setChecked(False)
             return True
         elif self.dc_name.currentText():
-            # 镜像和版本号
+            # 镜像和版本号获取和格式化部分
+            # 匹配镜像名和版本号的正则
+            image_compile = re.compile(r'[\w]+[a-z]+[\w]+')
+            version_compile = re.compile(r'[\w.]+\.[\d]+$')
+            # 镜像名和版本号
             img_and_version = self.images_input.toPlainText().strip()
-            img_and_version = img_and_version.strip(',')
             img_and_version = img_and_version.lower().replace(' ', '')
             # 下面两行替换掉’img_and_version‘字符串中的unicode字符‘\xe2\x80\x8b’
             img_and_version = img_and_version.encode('raw_unicode_escape').decode('utf-8')
             img_and_version = img_and_version.replace('\\u200b', '')
+            # 判断是否是多行输入部分
+            input_list = img_and_version.splitlines()
+            input_len = len(input_list)
+            if input_len == 1:
+                img_and_version = img_and_version
+            else:
+                img_and_version = ''
+                # 适配钉钉复制过来的多行格式
+                for index, content in enumerate(input_list):
+                    image_matching = image_compile.fullmatch(content)
+                    version_matching = version_compile.fullmatch(content)
+
+                    if image_matching:
+                        image_name = content
+                        img_and_version = img_and_version + image_name + ':'
+                    elif version_matching:
+                        image_version = content
+                        img_and_version = img_and_version + image_version + ','
+            img_and_version = img_and_version.strip(',')
 
             if group == '正式':
                 group = 'zs'
