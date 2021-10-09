@@ -200,7 +200,7 @@ class Ui_PublishTools(object):
             input_list = img_and_version.splitlines()
             input_len = len(input_list)
             if input_len == 1:
-                img_and_version = img_and_version
+                pass
             else:
                 img_and_version = ''
                 # 适配钉钉复制过来的多行格式
