@@ -135,6 +135,7 @@ class build_main_obj(object):
         else:
             # 如果只build某些指定的镜像执行此部分
             img_version_dict = self._str_dict_handle(img_version)
+            # publish_img_total = len(img_version_dict)
             if img_version_dict == 301:
                 return 301
             for img in img_version_dict:
